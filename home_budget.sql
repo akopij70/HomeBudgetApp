@@ -122,13 +122,13 @@ CREATE TRIGGER IF NOT EXISTS TR_modify_income
     UPDATE Wallet SET balance = (balance - old.amount + new.amount) WHERE id = new.walletId;
   END;
 
- CREATE TRIGGER IF NOT EXISTS TR_delete_income
+CREATE TRIGGER IF NOT EXISTS TR_delete_income
     AFTER DELETE ON Income 
   BEGIN
-    UPDATE Wallet SET balance = (balance - old.amount) WHERE id = new.walletId;
+    UPDATE Wallet SET balance = (balance - old.amount) WHERE id = old.walletId;
   END;
  
- CREATE TRIGGER IF NOT EXISTS TR_add_expense
+CREATE TRIGGER IF NOT EXISTS TR_add_expense
     AFTER INSERT ON Expense 
   BEGIN
     UPDATE Wallet SET balance = (balance - new.amount) WHERE id = new.walletId;
@@ -140,8 +140,20 @@ CREATE TRIGGER IF NOT EXISTS TR_modify_expense
     UPDATE Wallet SET balance = (balance + old.amount - new.amount) WHERE id = new.walletId;
   END;
 
- CREATE TRIGGER IF NOT EXISTS TR_delete_expense
+CREATE TRIGGER IF NOT EXISTS TR_delete_expense
     AFTER DELETE ON Expense 
   BEGIN
-    UPDATE Wallet SET balance = (balance + old.amount) WHERE id = new.walletId;
+    UPDATE Wallet SET balance = (balance + old.amount) WHERE id = old.walletId;
+  END;
+
+CREATE TRIGGER IF NOT EXISTS TR_delete_user
+    AFTER DELETE ON User 
+  BEGIN
+	DELETE FROM WalletOwnership WHERE userId = old.id;
+  END;
+
+CREATE TRIGGER IF NOT EXISTS TR_delete_wallet
+    AFTER DELETE ON Wallet 
+  BEGIN
+	DELETE FROM WalletOwnership WHERE walletId = old.id;
   END;
