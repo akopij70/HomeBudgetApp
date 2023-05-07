@@ -12,14 +12,19 @@ db_structure = {  # defines a list of columns for each table in the database
     "WishlistItem" : ["userId","name","price"],
     "Category" : ["name"]
 }
+#     "v_login" : ["name","password"], # TODO zaimplementowac sprawdzanie kategorii dla widokow i sprawdzic jakie kolumny tutaj wpisac
+#     "v_user_type" : ["userType"],
+#     "v_wallet_incomes" : ["wname","userId","amount","date","category","name"],
+#     "v_wallet_expenses" : ["wname","userId","amount","date","category","name"]
+
 
 class Db:
     """Class enables initializing database as well as inserting,
     modifying and deleting data from specified column and row"""
-    def __init__(self, name: str):
+    def __init__(self, name: str, sample_data: bool = False):
         if not os.path.exists(name+".db"):
             print("Database initialized!")
-            init_db.create_db(name)
+            init_db.create_db(name,sample_data)
         self.conn = sqlite3.connect(name+".db")
         self.cursor = self.conn.cursor()
 
@@ -35,7 +40,7 @@ class Db:
                 values += f"{column},"
                 continue
             values += f"\"{column}\","
-        if table in ["Expense", "Income"]:  # category validation
+        if table in ["Expense", "Income", "v_wallet_incomes", "v_wallet_expenses"]:  # category validation
             if not self.is_category(columns[4]):
                 self.cursor.execute(f'INSERT INTO Category (name) VALUES(\'{columns[4]}\')')
                 print(f'A new category "{columns[4]}" has been created implicitly.')
@@ -75,7 +80,6 @@ class Db:
         self.conn.commit()
         return True
 
-
     def set(self, table: str, column: str, row_specifier, new_val) -> None:
         """Modifies row of the given column with new_val using row_specifier expressed as follows:
            \n For "Expense" and "Income": id: int
@@ -89,7 +93,6 @@ class Db:
         elif table in ["WalletOwnership"]:
             self.cursor.execute(f'UPDATE {table} SET {column}=\'{new_val}\' WHERE walletId = {row_specifier[0]} AND userId = {row_specifier[1]}')
         self.conn.commit()
-
 
     def get(self, table: str, row_specifier=None) -> list:
         """Returns row represented as list from a given column. row_specifier is expressed as follows:
@@ -107,7 +110,6 @@ class Db:
             return self.cursor.execute(f'SELECT * FROM {table} WHERE walletId = {row_specifier[0]} AND userId = {row_specifier[1]}').fetchall()
         return []
 
-
     def is_category(self, name: str) -> bool:
         """Checks if the given category is in the Category table"""
         self.cursor.execute("SELECT name FROM Category")
@@ -117,13 +119,18 @@ class Db:
                 return True
         return False
 
-    def __del__(self):
-        self.conn.close()
+    def try_view(self):
+        print(self.cursor.execute(f'SELECT * FROM [v_wallet_expenses]').fetchall())
 
+    def __del__(self):
+        try:
+            self.conn.close()
+        except:
+            pass
 
 if __name__ == "__main__":  # debug and testing purpose only
 
-    baza_danych = Db('home_budget')
+    baza_danych = Db('home_budget', True)
 
     # baza_danych.insert("User", ["Fred", "admin", "Parent"])
     # baza_danych.insert("Wallet", [10_000, "Savings", "For holidays"])
@@ -147,4 +154,4 @@ if __name__ == "__main__":  # debug and testing purpose only
 
     # print(baza_danych.get("Wallet", 1))
     # print(baza_danych.get("WishlistItem", "Car"))
-    # print(baza_danych.get("Expense", 1))
+    # print(baza_danych.get("Category"))
