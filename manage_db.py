@@ -4,18 +4,19 @@ import os.path
 import init_db
 
 db_structure = {  # defines a list of columns for each table in the database
-    "Expense" : ["walletId","userId","amount","date","category","name"],
-    "Income" : ["walletId","userId","amount","date","category","name"],
-    "User" : ["name","password","userType"],
-    "Wallet" : ["balance","type","name"],
-    "WalletOwnership" : ["walletId","userId"],
-    "WishlistItem" : ["userId","name","price"],
-    "Category" : ["name"]
+    "Expense": ["walletId", "userId", "amount", "date", "category", "name"],
+    "Income": ["walletId", "userId", "amount", "date", "category", "name"],
+    "User": ["name", "password", "userType"],
+    "Wallet": ["balance", "type", "name"],
+    "WalletOwnership": ["walletId", "userId"],
+    "WishlistItem": ["userId", "name", "price"],
+    "Category": ["name"],
+
+    "v_login": ["name", "password"],
+    "v_user_type": ["userType"],
+    "v_wallet_incomes": ["name", "userId", "amount", "date", "category", "name"],
+    "v_wallet_expenses": ["name", "userId", "amount", "date", "category", "name"]
 }
-#     "v_login" : ["name","password"], # TODO zaimplementowac sprawdzanie kategorii dla widokow i sprawdzic jakie kolumny tutaj wpisac
-#     "v_user_type" : ["userType"],
-#     "v_wallet_incomes" : ["wname","userId","amount","date","category","name"],
-#     "v_wallet_expenses" : ["wname","userId","amount","date","category","name"]
 
 
 class Db:
@@ -27,7 +28,6 @@ class Db:
             init_db.create_db(name,sample_data)
         self.conn = sqlite3.connect(name+".db")
         self.cursor = self.conn.cursor()
-
 
     def insert(self, table: str, columns: list[str]) -> None:
         """Inserts a row with specified columns to the given table"""
@@ -50,7 +50,6 @@ class Db:
         self.cursor.execute('INSERT INTO '+table+' '+formated_columns+' '+'VALUES('+values+')')
         self.conn.commit()
 
-
     def delete(self, table: str, row_specifier=None) -> bool:
         """Deletes row from the specified table using row_specifier expressed as follows:
            \n For "Expense" and "Income": id: int
@@ -59,7 +58,7 @@ class Db:
            \n Returns 'True' if the row was deleted and 'False' if the row wasn't found."""
 
         if row_specifier is None:
-            self.cursor.execute(f'DELETE FROM {table}')  #deletes all rows
+            self.cursor.execute(f'DELETE FROM {table}')  # deletes all rows
             self.conn.commit()
             return True
 
@@ -119,14 +118,20 @@ class Db:
                 return True
         return False
 
-    def try_view(self):
-        print(self.cursor.execute(f'SELECT * FROM [v_wallet_expenses]').fetchall())
+    def get_view(self, view_name: str) -> list:
+        """Returns a list of data from the given view specified by view_name."""
+        views = [table for table in db_structure.keys() if table.startswith("v_")]
+        if view_name not in views:
+            raise ValueError(f'There is no {view_name} in the database!')
+
+        return self.cursor.execute(f'SELECT * FROM {view_name}').fetchall()
 
     def __del__(self):
         try:
             self.conn.close()
         except:
             pass
+
 
 if __name__ == "__main__":  # debug and testing purpose only
 
@@ -155,3 +160,6 @@ if __name__ == "__main__":  # debug and testing purpose only
     # print(baza_danych.get("Wallet", 1))
     # print(baza_danych.get("WishlistItem", "Car"))
     # print(baza_danych.get("Category"))
+
+    # print(baza_danych.get_view("v_login"))
+

@@ -104,9 +104,25 @@ CREATE VIEW IF NOT EXISTS v_login AS
 
 CREATE VIEW IF NOT EXISTS v_user_type AS
 	SELECT
-		id, name, type
+		id, name, userType
 	FROM
 		User;
+
+CREATE VIEW IF NOT EXISTS v_wallet_incomes AS
+	SELECT
+		Wallet.id, Wallet.name, Income.id, Income.userId, Income.amount, Income.date, Income.category
+	FROM
+		Income
+	JOIN
+	    Wallet ON Wallet.id = Income.walletId;
+
+CREATE VIEW IF NOT EXISTS v_wallet_expenses AS
+	SELECT
+		Wallet.id, Wallet.name, Expense.id, Expense.userId, Expense.amount, Expense.date, Expense.category
+	FROM
+		Expense
+	JOIN
+	    Wallet ON Wallet.id = Expense.walletId;
 
 --- Trigger Creation Queries ---
 
