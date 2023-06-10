@@ -13,6 +13,7 @@
 -   [routers](./routers)
     -   [**init**.py](./routers/__init__.py)
     -   [wallet.py](./routers/wallet.py)
+    -   [user.py](./routers/user.py)
 -   [dbmanagement](./dbmanagement)
     -   [**init**.py](./dbmanagement/__init__.py)
     -   [manage_db.py](./dbmanagement/manage_db.py)
