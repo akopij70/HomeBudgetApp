@@ -29,7 +29,7 @@ async def post_income(
 
     db.insert("Income", [walletId, userId, amount, date, category, name])
 
-    conn.commit
+    conn.commit()
 
     return {
         "walletId": walletId,
@@ -43,7 +43,8 @@ async def post_income(
 
 @router.get("/Incomes", tags=["Income"])
 async def get_income(id: int):
-    ids = list(c.execute(f"SELECT id FROM Incomes").fetchall())
+    ids = c.execute(f"SELECT id FROM Income").fetchall()
+    ids = [x for tpl in ids for x in tpl]
 
     if id not in ids:
         raise HTTPException(
@@ -51,14 +52,56 @@ async def get_income(id: int):
             detail="No such income in incomes (wrong id).",
         )
 
-    income = db.get("Income", id)
+    income = c.execute(f"SELECT * FROM Income WHERE id = {id}").fetchall()
 
     data = {}
-    data["walletId"] = income[0][0]
-    data["userId"] = income[0][1]
-    data["amount"] = income[0][2]
-    data["date"] = income[0][3]
-    data["category"] = income[0][4]
-    data["name"] = income[0][5]
+    data["walletId"] = income[0][1]
+    data["userId"] = income[0][2]
+    data["amount"] = income[0][3]
+    data["date"] = income[0][4]
+    data["category"] = income[0][5]
+    data["name"] = income[0][6]
 
     return data
+
+
+@router.put("/Incomes", tags=["Income"])
+async def put_income(
+    id: int,
+    amount: float,
+    date: str,
+    name: str | None = None,
+):
+    ids = c.execute(f"SELECT id FROM Income").fetchall()
+    ids = [x for tpl in ids for x in tpl]
+
+    if id not in ids:
+        raise HTTPException(
+            status_code=217,
+            detail="No such income in incomes (wrong id).",
+        )
+
+    c.execute(f"UPDATE Income SET amount = {amount} and date = \'{date}\' and  name = \'{name}\' WHERE id = {id}")
+    conn.commit()
+
+    return {
+        "amount": amount,
+        "date": date,
+        "name": name
+    }
+
+@router.delete("/Incomes", tags=["Income"])
+async def delete_income(id:int):
+    ids = c.execute(f"SELECT id FROM Income").fetchall()
+    ids = [x for tpl in ids for x in tpl]
+
+    if id not in ids:
+        raise HTTPException(
+            status_code=217,
+            detail="No such income in incomes (wrong id).",
+        )
+
+    c.execute(f"DELETE FROM Income WHERE id = {id}")
+    conn.commit()
+
+    return "Deleted successfully"

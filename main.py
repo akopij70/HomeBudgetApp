@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from routers.wallet import router as wallet_router
 from routers.user import router as user_router
-from routers.WishlistItem import router as WishlistItem_router
+from routers.wishlistitem import router as WishlistItem_router
 from routers.income import router as income_router
 from routers.expense import router as expense_router
 
