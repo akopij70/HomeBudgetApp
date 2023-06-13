@@ -17,6 +17,17 @@ async def get_wallets():
     wallets = c.execute(f"SELECT * FROM 'Wallet'").fetchall()
     return wallets
 
+@router.get("/GetBalance/{walletId}&{userId}", tags=["Wallet"])
+async def get_wallet_balance(walletId: int, userId: int):
+    wallet_ownership = c.execute(
+        f"SELECT * FROM 'WalletOwnership' WHERE userId = '{userId}' AND walletId = '{walletId}'"
+    ).fetchall()
+    if wallet_ownership:
+        balance = list(c.execute(f"SELECT balance FROM 'Wallet'").fetchone())
+    else:
+        raise HTTPException(status_code=410, detail="User doesnt have this wallet")
+    return {"Balance": balance[0]}
+
 
 @router.get("/{walletId}&{userId}", tags=["Wallet"])
 async def get_wallet(walletId: int, userId: int):

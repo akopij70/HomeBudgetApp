@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import sqlite3
+from dbmanagement.manage_db import *
 
 
 router = APIRouter(
@@ -8,6 +9,7 @@ router = APIRouter(
 )
 e404 = HTTPException(status_code=404, detail="Data not found")
 
+db = Db("home_budget", True)
 conn = sqlite3.connect("home_budget.db")
 c = conn.cursor()
 
@@ -21,13 +23,12 @@ async def post_expense(
     category: str,
     name: str | None = None,
 ):
+    
     wallet_ownership = c.execute(
         f"SELECT * FROM 'WalletOwnership' WHERE userId = '{userId}' AND walletId = '{walletId}'"
     ).fetchall()
     if wallet_ownership:
-        c.execute(
-            f"INSERT INTO Expense (walletId, userId, amount, date, category, name) VALUES ('{walletId}', '{userId}', '{amount}', '{date}', '{category}', '{name}')"
-        )
+        db.insert("Expense", [walletId, userId, amount, date, category, name])
         conn.commit()
     else:
         raise HTTPException(status_code=400, detail="User cant add expense to this wallet")
@@ -37,7 +38,7 @@ async def post_expense(
         "walletId": walletId,
         "amount": amount,
         "date": date,
-        "date": category,
+        "category": category,
         "name": name,
     }
 
@@ -63,5 +64,29 @@ async def delete_expense(userId: int, expenseId: int):
         c.execute(f"DELETE FROM Expense WHERE id = {expenseId}")
         conn.commit()
         return f"Deleted expense {users_expense}"
+    else:
+        raise HTTPException(status_code=400, detail="Couldnt find users expense")
+    
+@router.put("/ChangeExpense/{userId}&{expenseId}", tags=["Expense"])
+async def change_expense(
+    userId: int, 
+    expenseId: int, 
+    amount:float | None = None,  
+    date: str | None = None,
+    name: str | None = None,
+):
+    users_expense = c.execute(
+        f"SELECT * FROM 'Expense' WHERE userId = '{userId}' AND id = '{expenseId}'"
+    ).fetchall()
+
+    if users_expense:
+        if amount:
+            c.execute(f"UPDATE Expense SET amount = {amount} WHERE id = {expenseId}")
+        if date:
+            c.execute(f"UPDATE Expense SET date = '{date}' WHERE id = {expenseId}")
+        if name:
+            c.execute(f"UPDATE Expense SET name = '{name}' WHERE id = {expenseId}")
+        conn.commit()
+        raise HTTPException(status_code=200, detail="Succesfully modified expense")
     else:
         raise HTTPException(status_code=400, detail="Couldnt find users expense")
