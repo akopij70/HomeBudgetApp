@@ -7,6 +7,12 @@
 
 ---
 
+## Server
+
+`uvicorn main:app --reload`
+
+---
+
 ## Project structure
 
 -   [**main**.py](./main.py)
@@ -14,6 +20,7 @@
     -   [**init**.py](./routers/__init__.py)
     -   [wallet.py](./routers/wallet.py)
     -   [user.py](./routers/user.py)
+    -   [WishlistItem.py](./routers/WishlistItem.py)
 -   [dbmanagement](./dbmanagement)
     -   [**init**.py](./dbmanagement/__init__.py)
     -   [manage_db.py](./dbmanagement/manage_db.py)

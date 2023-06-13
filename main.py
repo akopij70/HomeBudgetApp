@@ -2,6 +2,8 @@ from fastapi import FastAPI
 
 from routers.wallet import router as wallet_router
 from routers.user import router as user_router
+from routers.WishlistItem import router as WishlistItem_router
+from routers.income import router as income_router
 
 
 app = FastAPI(
@@ -10,3 +12,5 @@ app = FastAPI(
 
 app.include_router(wallet_router)
 app.include_router(user_router)
+app.include_router(WishlistItem_router)
+app.include_router(income_router)

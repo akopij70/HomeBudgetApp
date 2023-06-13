@@ -177,13 +177,13 @@ class Db:
 if __name__ == "__main__":  # debug and testing purpose only
     baza_danych = Db("home_budget", True)
 
-    # baza_danych.insert("User", ["Fred", "admin", "Parent"])
-    # baza_danych.insert("Wallet", [12_000, "Savings", "For fun"])
-    # baza_danych.insert("WalletOwnership", [1, 1])
-    # baza_danych.insert("WishlistItem", [1, "Car", 20_000])
-    # baza_danych.insert("Category", ["Bills"])
-    # baza_danych.insert("Income", [1, 1, 100, "29.04.2023", "Gift", None])
-    # baza_danych.insert("Expense", [1, 1, 200, "26.04.2023", "Gift", "Bob's birthday"])
+    baza_danych.insert("User", ["Fred", "admin", "Parent"])
+    baza_danych.insert("Wallet", [12_000, "Savings", "For fun"])
+    baza_danych.insert("WalletOwnership", [1, 1])
+    baza_danych.insert("WishlistItem", [1, "Car", 20_000])
+    baza_danych.insert("Category", ["Bills"])
+    baza_danych.insert("Income", [1, 1, 100, "29.04.2023", "Gift", None])
+    baza_danych.insert("Expense", [1, 1, 200, "26.04.2023", "Gift", "Bob's birthday"])
 
     # baza_danych.delete("Category", "Gift")
     # baza_danych.delete("Expense", 1)
