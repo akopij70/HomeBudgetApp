@@ -66,6 +66,8 @@ async def put_wallet(
             c.execute(f"UPDATE Wallet SET {name}='{name}' WHERE id = {id}")
     else:
         return "User doesnt have permission to this wallet"
+    
+    conn.commit()
 
     return {"id": id, "balance": balance, "type": type, "name": name}
 
@@ -78,5 +80,6 @@ async def delete_wallet(userId: int, id: int):
 
     if wallet_ownership:
         c.execute(f"DELETE FROM Wallet WHERE id = {id}")
+        conn.commit()
     else:
         return "User doesnt have permission to this wallet"
