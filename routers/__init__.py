@@ -1,6 +1,6 @@
 from .wallet import router as wallet_router
 from .user import router as user_router
-from .WishlistItem import router as WishlistItem_router
+from .wishlistitem import router as WishlistItem_router
 from .income import router as income_router
 
 
