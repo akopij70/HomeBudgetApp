@@ -81,17 +81,16 @@ async def put_income(
             detail="No such income in incomes (wrong id).",
         )
 
-    c.execute(f"UPDATE Income SET amount = {amount} and date = \'{date}\' and  name = \'{name}\' WHERE id = {id}")
+    c.execute(
+        f"UPDATE Income SET amount = {amount} and date = '{date}' and  name = '{name}' WHERE id = {id}"
+    )
     conn.commit()
 
-    return {
-        "amount": amount,
-        "date": date,
-        "name": name
-    }
+    return {"amount": amount, "date": date, "name": name}
+
 
 @router.delete("/Incomes", tags=["Income"])
-async def delete_income(id:int):
+async def delete_income(id: int):
     ids = c.execute(f"SELECT id FROM Income").fetchall()
     ids = [x for tpl in ids for x in tpl]
 
