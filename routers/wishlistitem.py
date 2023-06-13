@@ -17,7 +17,7 @@ async def get_WishlistItems(userId: int):
         WishlistItems = c.execute(
             f"SELECT * FROM WishListItem WHERE userId = {userId} "
         ).fetchall()
-        print(WishlistItems)
+
         response = []
         for WishlistItem in WishlistItems:
             data = {}
@@ -32,7 +32,7 @@ async def get_WishlistItems(userId: int):
     return response
 
 
-@router.get("/single/{userId}&{wishlistItemId}")
+@router.get("/item/{userId}&{wishlistItemId}")
 async def get_WishlistItem(userId: int, wishlistItemId: int):
     try:
         WishlistItem = c.execute(
@@ -51,7 +51,7 @@ async def get_WishlistItem(userId: int, wishlistItemId: int):
 
 
 @router.post("/", status_code=201)
-async def post_WishlistItem(userId: int, name: str, price: str):
+async def post_WishlistItem(userId: int, name: str, price: float):
     c.execute(
         f"INSERT INTO WishlistItem (userId, name, price) VALUES ('{userId}','{name}','{price}')"
     )
@@ -63,24 +63,46 @@ async def post_WishlistItem(userId: int, name: str, price: str):
 async def put_WishlistItem(
     id: int,
     userId: int,
-    name: str,
     newName: str | None = None,
-    price: str | None = None,
+    price: float | None = None,
 ):
-    if newName:
-        db.set("WishlistItem", "name", name, newName)
-    if price:
-        db.set("WishlistItem", "price", name, price)
+    owner = list(c.execute(f"SELECT userId FROM WishlistItem WHERE id = {id}"))
+    if owner:
+        if owner[0][0] != userId:
+            raise HTTPException(status_code=410, detail="Not permitted")
 
-    return {
-        "id": id,
-        "userId": userId,
-        "name": newName | name,
-        "price": price,
-    }
+        if newName:
+            c.execute(f"UPDATE WishlistItem SET name='{newName}' WHERE id = {id}")
+        if price:
+            c.execute(f"UPDATE WishlistItem SET price='{price}' WHERE id = {id}")
+        conn.commit()
+
+        return {
+            "id": id,
+            "userId": userId,
+            "name": newName,
+            "price": price,
+        }
+    else:
+        raise HTTPException(
+            status_code=410,
+            detail="User/item doesnt exist or item doesnt belong to user",
+        )
 
 
-@router.delete("/{name}", status_code=204)
-async def delete_WishlistItem(name: str):
-    db.delete("WishlistItem", name)
-    return
+@router.delete("/{id}&{userId}", status_code=204)
+async def delete_WishlistItem(id: int, userId: int):
+    owner = list(c.execute(f"SELECT userId FROM WishlistItem WHERE id = {id}"))
+    if owner:
+        if owner[0][0] != userId:
+            raise HTTPException(status_code=410, detail="Not permitted")
+
+        c.execute(f"DELETE FROM WishlistItem WHERE id={id}")
+        conn.commit()
+
+        return
+    else:
+        raise HTTPException(
+            status_code=410,
+            detail="User/item doesnt exist or item doesnt belong to user",
+        )
