@@ -43,7 +43,8 @@ async def post_income(
 
 @router.get("/Incomes", tags=["Income"])
 async def get_income(id: int):
-    ids = list(c.execute(f"SELECT id FROM Incomes").fetchall())
+    ids = c.execute(f"SELECT id FROM Income").fetchall()
+    ids = [x for tpl in ids for x in tpl]
 
     if id not in ids:
         raise HTTPException(
@@ -62,3 +63,30 @@ async def get_income(id: int):
     data["name"] = income[0][5]
 
     return data
+
+
+@router.put("/Incomes", tags=["Income"])
+async def put_income(
+    id: int,
+    amount: float,
+    date: str,
+    name: str | None = None,
+):
+    ids = c.execute(f"SELECT id FROM Income").fetchall()
+    ids = [x for tpl in ids for x in tpl]
+
+    if id not in ids:
+        raise HTTPException(
+            status_code=217,
+            detail="No such income in incomes (wrong id).",
+        )
+
+    c.execute(f"UPDATE Income SET amount = {amount} and date = \'{date}\' and  name = \'{name}\' WHERE id = 1")
+
+    conn.commit
+
+    return {
+        "amount": amount,
+        "date": date,
+        "name": name
+    }
