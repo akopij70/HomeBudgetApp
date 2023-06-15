@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import sqlite3
+from utils import signJWT
 
 router = APIRouter(
     prefix="/users",
@@ -25,18 +26,28 @@ async def signup_user(name: str, password: str, userType: str):
 
     conn.commit()
 
-    return
+    userId = list(c.execute(f"SELECT MAX(id) FROM User").fetchone())
+    return signJWT(userId[0])
 
 
 @router.post("/login/{name}&{password}", status_code=200)
 async def login_user(name: str, password: str):
     user = c.execute(f"SELECT * FROM 'User' WHERE name = '{name}'").fetchall()
 
-    if user:
-        if user[0][2] == password:
-            return {"token": "123456789"}
-        else:
-            raise HTTPException(status_code=410, detail="Wrong password")
-
-    else:
+    if not user:
         raise HTTPException(status_code=410, detail="User doesnt exist")
+
+    if check_user(name, password):
+        return signJWT(user[0][0])
+    else:
+        raise HTTPException(status_code=410, detail="Wrong password/username")
+
+
+def check_user(user_name: str, user_password: str):
+    user = c.execute(
+        f"SELECT name,password FROM User WHERE name = '{user_name}' AND password = '{user_password}'"
+    ).fetchall()
+    print(user)
+    if user:
+        return True
+    return False

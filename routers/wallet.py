@@ -4,7 +4,6 @@ import sqlite3
 
 router = APIRouter(
     prefix="/Wallets",
-    tags=["Wallets"],
 )
 e404 = HTTPException(status_code=404, detail="Data not found")
 
@@ -16,6 +15,7 @@ c = conn.cursor()
 async def get_wallets():
     wallets = c.execute(f"SELECT * FROM 'Wallet'").fetchall()
     return wallets
+
 
 @router.get("/GetBalance/{walletId}&{userId}", tags=["Wallet"])
 async def get_wallet_balance(walletId: int, userId: int):
@@ -77,7 +77,7 @@ async def put_wallet(
             c.execute(f"UPDATE Wallet SET {name}='{name}' WHERE id = {id}")
     else:
         return "User doesnt have permission to this wallet"
-    
+
     conn.commit()
 
     return {"id": id, "balance": balance, "type": type, "name": name}

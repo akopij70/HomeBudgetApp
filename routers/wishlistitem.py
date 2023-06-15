@@ -1,5 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body, Depends
 import sqlite3
+from bearer import JWTBearer
+from utils import signJWT, decodeJWT, checkChild
 
 router = APIRouter(
     prefix="/WishlistItems",
@@ -11,8 +13,10 @@ conn = sqlite3.connect("home_budget.db")
 c = conn.cursor()
 
 
-@router.get("/{userId}")
-async def get_WishlistItems(userId: int):
+@router.get("/{userId}", dependencies=[Depends(JWTBearer())])
+async def get_WishlistItems(userId: int, token: dict = Depends(JWTBearer())):
+    checkChild(userId, decodeJWT(token)["user_id"])
+
     try:
         WishlistItems = c.execute(
             f"SELECT * FROM WishListItem WHERE userId = {userId} "
@@ -28,6 +32,8 @@ async def get_WishlistItems(userId: int):
             response.append(data)
     except:
         raise e404
+    # else:
+    #     raise HTTPException(status_code=403, detail="Not Authorized")
 
     return response
 
