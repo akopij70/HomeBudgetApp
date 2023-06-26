@@ -47,7 +47,6 @@ def check_user(user_name: str, user_password: str):
     user = c.execute(
         f"SELECT name,password FROM User WHERE name = '{user_name}' AND password = '{user_password}'"
     ).fetchall()
-    print(user)
     if user:
         return True
     return False

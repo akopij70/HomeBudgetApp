@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import sqlite3
+from utils import signJWT, decodeJWT, checkChild
+from bearer import JWTBearer
+
 
 router = APIRouter(
     prefix="/Category",
@@ -11,7 +14,7 @@ conn = sqlite3.connect("home_budget.db")
 c = conn.cursor()
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(JWTBearer())])
 async def get_categories():
     try:
         categories = c.execute(f"SELECT * FROM Category").fetchall()
@@ -27,7 +30,7 @@ async def get_categories():
     return response
 
 
-@router.get("/name/{name}")
+@router.get("/name/{name}", dependencies=[Depends(JWTBearer())])
 async def get_category(name: str):
     try:
         category = c.execute(f"SELECT * FROM Category WHERE name = '{name}'").fetchall()
@@ -40,8 +43,11 @@ async def get_category(name: str):
     return data
 
 
-@router.get("/expenses/{userId}&{name}")
-async def get_expenses_by_category(userId: int, name: str):
+@router.get("/expenses/{userId}&{name}", dependencies=[Depends(JWTBearer())])
+async def get_expenses_by_category(
+    userId: int, name: str, token: dict = Depends(JWTBearer())
+):
+    checkChild(userId, decodeJWT(token)["user_id"])
     try:
         expenses = c.execute(f"SELECT * FROM Expense WHERE category = '{name}'")
 

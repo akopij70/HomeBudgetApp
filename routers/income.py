@@ -1,5 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from dbmanagement.manage_db import *
+from utils import signJWT, decodeJWT, checkChild
+from bearer import JWTBearer
+
 
 router = APIRouter()
 e404 = HTTPException(status_code=404, detail="Data not found")
@@ -10,7 +13,7 @@ conn = sqlite3.connect("home_budget.db")
 c = conn.cursor()
 
 
-@router.post("/Incomes", tags=["Income"])
+@router.post("/Incomes", tags=["Income"], dependencies=[Depends(JWTBearer())])
 async def post_income(
     walletId: int,
     userId: int,
@@ -18,7 +21,9 @@ async def post_income(
     date: str,
     category: str,
     name: str | None = None,
+    token: dict = Depends(JWTBearer()),
 ):
+    checkChild(userId, decodeJWT(token)["user_id"])
     wallets_ownerships = db.get("WalletOwnership")
 
     if (walletId, userId) not in wallets_ownerships:
@@ -41,8 +46,13 @@ async def post_income(
     }
 
 
-@router.get("/Incomes", tags=["Income"])
-async def get_income(id: int):
+@router.get("/Incomes", tags=["Income"], dependencies=[Depends(JWTBearer())])
+async def get_income(
+    userId: int,
+    id: int,
+    token: dict = Depends(JWTBearer()),
+):
+    checkChild(userId, decodeJWT(token)["user_id"])
     ids = c.execute(f"SELECT id FROM Income").fetchall()
     ids = [x for tpl in ids for x in tpl]
 
@@ -65,13 +75,16 @@ async def get_income(id: int):
     return data
 
 
-@router.put("/Incomes", tags=["Income"])
+@router.put("/Incomes", tags=["Income"], dependencies=[Depends(JWTBearer())])
 async def put_income(
+    userId: int,
     id: int,
     amount: float,
     date: str,
     name: str | None = None,
+    token: dict = Depends(JWTBearer()),
 ):
+    checkChild(userId, decodeJWT(token)["user_id"])
     ids = c.execute(f"SELECT id FROM Income").fetchall()
     ids = [x for tpl in ids for x in tpl]
 
@@ -89,8 +102,13 @@ async def put_income(
     return {"amount": amount, "date": date, "name": name}
 
 
-@router.delete("/Incomes", tags=["Income"])
-async def delete_income(id: int):
+@router.delete("/Incomes", tags=["Income"], dependencies=[Depends(JWTBearer())])
+async def delete_income(
+    userId: int,
+    id: int,
+    token: dict = Depends(JWTBearer()),
+):
+    checkChild(userId, decodeJWT(token)["user_id"])
     ids = c.execute(f"SELECT id FROM Income").fetchall()
     ids = [x for tpl in ids for x in tpl]
 
