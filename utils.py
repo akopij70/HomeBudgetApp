@@ -25,7 +25,7 @@ def token_response(token: str):
 
 
 def signJWT(user_id: str) -> Dict[str, str]:
-    payload = {"user_id": user_id, "expires": time.time() + 600}
+    payload = {"user_id": user_id, "expires": time.time() + 600 * 3}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     return token_response(token)
@@ -44,5 +44,6 @@ def checkChild(userId_param: int, userId_token: int):
         f"SELECT userType FROM USER WHERE id={userId_token}"
     ).fetchall()
 
-    if userType[0][0].lower() == "child" and userId_param != userId_token:
-        raise HTTPException(status_code=403, detail="What are you looking for?")
+    if userType[0][0].lower() == "child":
+        if userId_param != userId_token:
+            raise HTTPException(status_code=403, detail="What are you looking for?")
